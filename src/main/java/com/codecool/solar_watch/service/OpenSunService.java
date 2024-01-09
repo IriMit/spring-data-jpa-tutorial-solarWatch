@@ -1,12 +1,17 @@
 package com.codecool.solar_watch.service;
 
+import com.codecool.solar_watch.model.GeoParser;
+import com.codecool.solar_watch.model.ResultOfGEoParser;
 import com.codecool.solar_watch.model.SunTimeReport;
 import com.codecool.solar_watch.model.SunTimeApiResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Arrays;
 
 @Service
 public class OpenSunService {
@@ -17,6 +22,21 @@ public class OpenSunService {
     public OpenSunService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+    public ResultOfGEoParser  getLatLongByCityName(String cityName){
+
+        String  url = String.format("http://api.openweathermap.org/geo/1.0/direct?q=%s&limit=%s&appid=%s",
+                cityName, 1,  API_KEYForOpenWeather);
+        ResultOfGEoParser[] response = restTemplate.getForObject(url, ResultOfGEoParser[].class);
+
+        if (response!= null){
+            logger.info("responseGeo:{}", response[0]);
+            var lon = response[0].lon();
+            var lat = response[0].lat();
+            return new ResultOfGEoParser(lat, lon);
+        }
+        return null;
+    };
 
     public SunTimeReport getWeatherResponseForCityByDate(String date, String lat, String lng) {
 
