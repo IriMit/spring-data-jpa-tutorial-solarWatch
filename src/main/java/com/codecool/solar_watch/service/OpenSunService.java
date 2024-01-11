@@ -1,6 +1,6 @@
 package com.codecool.solar_watch.service;
 
-import com.codecool.solar_watch.model.GeoParser;
+//import com.codecool.solar_watch.model.GeoParser;
 import com.codecool.solar_watch.model.ResultOfGEoParser;
 import com.codecool.solar_watch.model.SunTimeReport;
 import com.codecool.solar_watch.model.SunTimeApiResults;
@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 
 @Service
@@ -24,7 +25,9 @@ public class OpenSunService {
     }
 
     public ResultOfGEoParser  getLatLongByCityName(String cityName){
-
+        if(cityName == null || cityName.isEmpty()){
+            throw new IllegalArgumentException("city name is required");
+        }
         String  url = String.format("http://api.openweathermap.org/geo/1.0/direct?q=%s&limit=%s&appid=%s",
                 cityName, 1,  API_KEYForOpenWeather);
         ResultOfGEoParser[] response = restTemplate.getForObject(url, ResultOfGEoParser[].class);
@@ -38,7 +41,7 @@ public class OpenSunService {
         return null;
     };
 
-    public SunTimeReport getWeatherResponseForCityByDate(String date, String lat, String lng) {
+    public SunTimeReport getSunTimeForCityByDate(String date, String lat, String lng) {
 
 
         String url = String.format("https://api.sunrise-sunset.org/json?lat=%s&lng=%s&date=%s", lat, lng, date);
@@ -47,7 +50,8 @@ public class OpenSunService {
 
         if (response.getBody() != null) {
             logger.info("response: {}", response);
-            return new SunTimeReport(response.getBody().results().sunrise(), response.getBody().results().sunset());
+            //OffsetDateTime sunriseTime = OffsetDateTime.parse(response.getBody().results().sunrise());
+            return new SunTimeReport( response.getBody().results().sunrise(), response.getBody().results().sunset());
         } else {
             logger.error("Response body is null.");
         }
